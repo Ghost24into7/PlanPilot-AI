@@ -1,0 +1,24 @@
+/* Modern dashboard styles inspired by Soft UI */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+.card { border: none; border-radius: 15px; }
+.navbar-brand { font-weight: bold; }
+.spinner-border { width: 3rem; height: 3rem; }
+
+/* Fade Animation for URL Loader */
+@keyframes fadeInOut {
+    0% { opacity: 0; transform: translateY(20px); }
+    50% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(-20px); }
+}
+
+.url-item {
+    animation: fadeInOut 1s ease-in-out infinite;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white; padding: 10px; border-radius: 10px; margin: 5px 0;
+}
+
+/* Progress Bar for Fun */
+#progressBar {
+    width: 100%; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;
+}
+#progressFill { height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.3s; }
