@@ -78,10 +78,12 @@ For production, use a WSGI server like Gunicorn and consider NGINX for reverse p
 
 ## Examples
 
-![alt text](image.png)
-![alt text](image-1.png)
+<img width="1919" height="995" alt="image" src="https://github.com/user-attachments/assets/7a5ba30f-8310-4760-8db3-c19aedd89322" />
+<img width="1910" height="849" alt="image" src="https://github.com/user-attachments/assets/4a028c77-536b-4cd4-821f-a63ac5451005" />
+
 
 ## AI Assistance Disclosure
 
 The foundational design, modular architecture, and custom integrations (such as the Flask backend, database management, and UI interactions) were spearheaded by the primary developer, drawing on extensive expertise in web development and AI systems. To optimize certain aspects like prompt engineering for universality and code refinement for efficiency, AI assistants including Grok and Claude were consulted for iterative suggestions, ensuring creative enhancements while maintaining the developer's core vision and control over the project's direction. This collaboration leveraged AI's strengths in rapid prototyping and pattern recognition to accelerate development without compromising originality.
+
 
