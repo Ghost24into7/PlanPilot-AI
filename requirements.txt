@@ -1,12 +1,9 @@
-flask
-requests
+Flask
+python-dotenv
+google-generativeai
 tavily-python
 trafilatura
 readability-lxml
 pypdf
-google-generativeai
-sqlite3  
-python-dotenv
-flask-cors
-marked  
-dompurify  
+requests
+Werkzeug

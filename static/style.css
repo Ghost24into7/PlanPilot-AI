@@ -1,24 +1,156 @@
-/* Modern dashboard styles inspired by Soft UI */
-body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-.card { border: none; border-radius: 15px; }
-.navbar-brand { font-weight: bold; }
-.spinner-border { width: 3rem; height: 3rem; }
-
-/* Fade Animation for URL Loader */
-@keyframes fadeInOut {
-    0% { opacity: 0; transform: translateY(20px); }
-    50% { opacity: 1; transform: translateY(0); }
-    100% { opacity: 0; transform: translateY(-20px); }
-}
-
-.url-item {
-    animation: fadeInOut 1s ease-in-out infinite;
+/* static/css/style.css */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white; padding: 10px; border-radius: 10px; margin: 5px 0;
+    margin: 0;
+    padding: 20px;
+    color: #333;
 }
 
-/* Progress Bar for Fun */
-#progressBar {
-    width: 100%; height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden;
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    overflow: hidden;
 }
-#progressFill { height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.3s; }
+
+header {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+header h1 { margin: 0; font-size: 2.5em; }
+header p { margin: 10px 0 0; opacity: 0.9; }
+
+main { padding: 40px; }
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+#goal-input {
+    width: 100%;
+    max-width: 600px;
+    height: 120px;
+    padding: 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 16px;
+    resize: vertical;
+    transition: border-color 0.3s;
+}
+
+#goal-input:focus { border-color: #4facfe; outline: none; }
+
+#generate-btn, #new-plan-btn {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+#generate-btn:hover, #new-plan-btn:hover { transform: scale(1.05); }
+
+#progress-section, #result-section {
+    margin: 40px 0;
+    padding: 20px;
+    border-radius: 10px;
+    background: #f8f9ff;
+}
+
+.hidden { display: none; }
+
+#progress-bar {
+    width: 100%;
+    height: 10px;
+    background: #e0e0e0;
+    border-radius: 5px;
+    overflow: hidden;
+    margin-bottom: 20px;
+}
+
+#progress-bar::after {
+    content: '';
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    width: 0%;
+    animation: load 2s ease-in-out infinite;
+}
+
+@keyframes load {
+    0%, 100% { width: 0%; }
+    50% { width: 100%; }
+}
+
+.source-item {
+    background: white;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    border-left: 4px solid #4facfe;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-in forwards;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; transform: translateX(0); }
+}
+
+.source-item.fade-out {
+    animation: fadeOut 0.5s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; transform: translateX(-20px); }
+}
+
+#plan-output {
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    padding: 20px;
+    background: white;
+    max-height: 600px;
+    overflow-y: auto;
+    line-height: 1.6;
+}
+
+#plan-output h2, #plan-output h3 { color: #4facfe; }
+#plan-output a { color: #00f2fe; text-decoration: none; }
+#plan-output a:hover { text-decoration: underline; }
+#plan-output img { max-width: 100%; border-radius: 5px; }
+
+.history-section h2 { color: #4facfe; }
+#history-list {
+    display: grid;
+    gap: 20px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.history-item {
+    background: #f8f9ff;
+    padding: 15px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: box-shadow 0.3s;
+}
+
+.history-item:hover { box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+
+@media (max-width: 768px) {
+    .container { margin: 10px; padding: 20px; }
+    header { padding: 20px; }
+    main { padding: 20px; }
+}

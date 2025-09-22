@@ -11,8 +11,8 @@ from datetime import datetime, timedelta
 import re
 
 # Placeholders for API keys - replace with actual keys
-GEMINI_API_KEY = "your api key here"
-TAVILY_API_KEY = "your api key here"
+GEMINI_API_KEY=""
+TAVILY_API_KEY=""
 
 # Configure Gemini
 genai.configure(api_key=GEMINI_API_KEY)
