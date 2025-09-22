@@ -1,126 +1,119 @@
 # app.py
 """
-Main Flask application for the Task Planning Agent Dashboard.
-Handles routing, API endpoints, and integrates with agents and generators.
-Uses Flask for the web server, Jinja2 for templating, and serves static files.
+Flask application for the Task Planning Agent Dashboard.
+This is the main entry point that handles routes, integrates with other modules,
+and serves the advanced UI.
 """
 
 import os
-import sqlite3
-from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from dotenv import load_dotenv
 from werkzeug.utils import secure_filename
-
-# Import custom modules
-from database import init_db, store_plan, store_query, get_all_plans
-from search_agent import find_and_extract_sources
-from llm_generator import (
-    extract_num_days, break_into_steps, generate_plan,
-    needs_weather, extract_city_for_weather
-)
-from weather import get_weather
+import uuid
+import json
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
 
+# Initialize Flask app
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'  # For any future file uploads, though not used yet
+app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Ensure upload folder exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Import modules after app init to avoid circular imports
+from database import init_db, store_plan, get_all_plans, store_query
+from search_agent import generate_search_queries, find_and_extract_sources
+from planner import extract_num_days, break_into_steps, needs_weather, get_weather, generate_plan
 
-# Initialize database on startup
+# Initialize database
 init_db()
 
 @app.route('/')
 def index():
     """
-    Render the main dashboard HTML.
-    Displays input form for goal, history of plans, and handles JS for interactions.
+    Render the main dashboard page.
     """
     return render_template('index.html')
 
-@app.route('/api/generate-plan', methods=['POST'])
+@app.route('/generate_plan', methods=['POST'])
 def generate_plan_endpoint():
     """
-    API endpoint to generate a plan based on user goal.
-    Handles JSON input with 'goal' key.
-    Returns JSON with status, plan (in Markdown), and any errors.
-    Integrates searching, weather, and plan generation with progress simulation.
+    Endpoint to generate a plan based on user goal.
+    Handles the full workflow: search, extraction, planning.
+    Returns progress updates and final plan via JSON for real-time UI updates.
     """
-    data = request.get_json()
+    data = request.json
     goal = data.get('goal', '').strip()
-
     if not goal:
-        return jsonify({'status': 'error', 'message': 'Please enter a goal.'}), 400
+        return jsonify({'error': 'Please enter a goal.'}), 400
 
-    try:
-        # Step 1: Extract days and steps (quick LLM calls)
-        days = extract_num_days(goal)
-        steps = break_into_steps(goal)
+    # Generate unique session ID for progress tracking
+    session_id = str(uuid.uuid4())
 
-        if not steps:
-            return jsonify({'status': 'error', 'message': 'Failed to break goal into steps.'}), 500
+    # Step 1: Extract days
+    days = extract_num_days(goal)
 
-        # Simulate progress: Yield search progress
-        progress = {
-            'stage': 'searching',
-            'message': 'Breaking down your goal and searching for the best resources...',
-            'sources': []
-        }
-        # In a real async setup, this would stream; here, we'll collect and return all at once
-        # But for animation, client JS will poll or use SSE; simplified to single response with stages
+    # Step 2: Break into steps
+    steps = break_into_steps(goal)
+    if not steps:
+        return jsonify({'error': 'Failed to break goal into steps.'}), 500
 
-        # Step 2: Find sources with fallback for failed URLs
-        sources = find_and_extract_sources(goal, num_sources=3)  # Ensures full set with alternatives
+    # Emit progress (via SSE or polling, but for simplicity, return in batches)
+    progress = {'session_id': session_id, 'step': 'searching', 'message': 'Generating search queries...', 'sources': []}
 
-        progress['sources'] = [
-            {'url': s['url'], 'search_query': s['search_query']} for s in sources
-        ]
-        progress['stage'] = 'summarizing'
-        progress['message'] = 'Summarizing key details from sources...'
+    # Step 3: Find and extract sources with replacements for failures
+    sources = find_and_extract_sources(goal, num_sources=3)
+    if len(sources) < 2:
+        # Ensure at least 2 by searching more if needed
+        while len(sources) < 2:
+            additional_query = f"additional resources for {goal}"
+            additional_sources = find_and_extract_sources(additional_query, num_sources=1)
+            sources.extend(additional_sources)
+            sources = sources[:3]  # Cap at 3
 
-        # Store queries (from search_agent)
-        # Already handled in find_and_extract_sources via store_query
+    # Update progress with sources
+    progress['sources'] = [{'url': s['url'], 'search_query': s['search_query']} for s in sources]
+    progress['message'] = 'Sources extracted. Fetching weather if needed...'
 
-        # Step 3: Weather if needed
-        weather = None
-        if needs_weather(goal):
-            city = extract_city_for_weather(goal)
+    # Step 4: Get weather if needed
+    weather = None
+    if needs_weather(goal):
+        city_prompt = f"Extract the main city from this goal: {goal}. Output only the city name."
+        try:
+            from google.generativeai import GenerativeModel
+            import google.generativeai as genai
+            genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
+            model = GenerativeModel('gemini-1.5-flash')
+            city_response = model.generate_content(city_prompt)
+            city = city_response.text.strip()
             if city:
                 weather = get_weather(city, days)
-                if not weather:
-                    progress['warnings'] = progress.get('warnings', []) + ['Weather fetch failed.']
+        except Exception as e:
+            pass  # Weather optional
 
-        progress['stage'] = 'generating'
-        progress['message'] = "Crafting your personalized, fun plan... Hang tight!"
+    progress['message'] = 'Generating your personalized plan...'
 
-        # Step 4: Generate plan
-        plan = generate_plan(goal, steps, sources, weather, days)
+    # Step 5: Generate plan
+    plan = generate_plan(goal, steps, sources, weather, days)
+    if "Error" in plan:
+        return jsonify({'error': plan}), 500
 
-        if "Error" in plan:
-            return jsonify({'status': 'error', 'message': plan}), 500
+    # Store plan
+    timestamp = datetime.now().isoformat()
+    store_plan(goal, plan, timestamp)
 
-        # Store plan
-        store_plan(goal, plan)
+    # Final progress
+    progress['step'] = 'complete'
+    progress['plan'] = plan
+    progress['days'] = days
 
-        return jsonify({
-            'status': 'success',
-            'plan': plan,  # Markdown ready for client rendering
-            'days': days,
-            'progress': progress
-        })
+    return jsonify(progress)
 
-    except Exception as e:
-        return jsonify({'status': 'error', 'message': f'Generation failed: {str(e)}'}), 500
-
-@app.route('/api/history')
+@app.route('/history')
 def history():
     """
-    API endpoint to fetch all stored plans for history display.
-    Returns JSON list of plans with goal, plan, timestamp.
+    Endpoint to fetch history of plans.
     """
     plans = get_all_plans()
     return jsonify([{'goal': g, 'plan': p, 'timestamp': t} for g, p, t in plans])
@@ -128,9 +121,9 @@ def history():
 @app.route('/static/<path:filename>')
 def static_files(filename):
     """
-    Serve static files (CSS, JS, images).
+    Serve static files (CSS, JS, etc.).
     """
     return send_from_directory('static', filename)
 
 if __name__ == '__main__':
-    app.run(debug=os.getenv('FLASK_DEBUG', 'True').lower() == 'true', host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=5000)

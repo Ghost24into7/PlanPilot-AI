@@ -4,39 +4,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Task Planning Agent Dashboard</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>PlanPilot-AI</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <script src="{{ url_for('static', filename='js/script.js') }}" defer></script>
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
 </head>
 <body>
-    <div class="container">
+    <div class="dashboard">
         <header>
-            <h1>🚀 Task Planning Agent</h1>
-            <p>Your AI-powered planner for goals, trips, learning, and more!</p>
+            <h1>🚀 PlanPilot-AI</h1>
+            <p>Your AI-powered companion for fun, tailored plans, guides, and answers!</p>
         </header>
 
         <main>
             <section class="input-section">
-                <textarea id="goal-input" placeholder="Enter your goal, e.g., 'Plan a 3-day fun trip to Paris' or 'Learn Python basics'"></textarea>
-                <button id="generate-btn">Generate Plan ✨</button>
+                <textarea id="goal-input" placeholder="Enter your goal, e.g., 'Plan a 3-day trip to Paris' or 'Learn Python basics in a week'"></textarea>
+                <button id="generate-btn">Generate Answer ✨</button>
             </section>
 
             <section id="progress-section" class="hidden">
-                <div id="progress-bar"></div>
-                <div id="progress-message"></div>
-                <div id="sources-list"></div>
-                <div id="stage-message"></div>
-            </div>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div class="progress-fill"></div>
+                    </div>
+                    <p id="progress-message">Getting started...</p>
+                    <div id="search-animation" class="search-animation hidden">
+                        <div class="link-item" id="link-1">
+                            <span>🔍 Searching <a id="link-url-1" href="#" target="_blank">Link 1</a>...</span>
+                        </div>
+                        <div class="link-item hidden" id="link-2">
+                            <span>🔍 Searching <a id="link-url-2" href="#" target="_blank">Link 2</a>...</span>
+                        </div>
+                        <div class="link-item hidden" id="link-3">
+                            <span>🔍 Searching <a id="link-url-3" href="#" target="_blank">Link 3</a>...</span>
+                        </div>
+                    </div>
+                    <p id="generating-message" class="hidden">✨ Crafting your personalized answer...</p>
+                </div>
+            </section>
 
-            <section id="result-section" class="hidden">
-                <h2>Your Personalized Plan</h2>
-                <div id="plan-output"></div>
-                <button id="new-plan-btn">New Plan</button>
+            <section id="plan-section" class="hidden">
+                <h2>Your Generated Answer</h2>
+                <div id="plan-content"></div>
+                <div id="edit-section" class="hidden">
+                    <textarea id="edit-textarea"></textarea>
+                    <button id="save-edit-btn">Save Changes</button>
+                    <button id="cancel-edit-btn">Cancel</button>
+                </div>
+                <button id="edit-plan-btn" class="secondary-btn">Edit</button>
+                <button id="new-plan-btn" class="secondary-btn">New Goal</button>
             </section>
 
             <section class="history-section">
-                <h2>📚 Plan History</h2>
+                <h2>📜 Answer History</h2>
                 <div id="history-list"></div>
             </section>
         </main>
