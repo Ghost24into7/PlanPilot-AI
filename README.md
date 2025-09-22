@@ -1,7 +1,5 @@
 # PlanPilot-AI
 
-![Task Planning Agent Banner](https://via.placeholder.com/1200x200/2f3b3c/ffffff?text=Task+Planning+Agent) <!-- Placeholder for a banner image; replace with actual if available -->
-
 A sophisticated, AI-powered web application built with Flask that assists users in generating detailed, tailored plans or guides based on natural language goals. Leveraging web search, content extraction, and generative AI, it creates actionable itineraries, learning paths, or task breakdowns, complete with weather forecasts (where relevant), resource links, and Google-mapped locations. The dashboard features an intuitive UI with real-time progress animations, editable plans, and an accordion-style history viewer.
 
 ## How It Works
@@ -86,3 +84,4 @@ For production, use a WSGI server like Gunicorn and consider NGINX for reverse p
 ## AI Assistance Disclosure
 
 The foundational design, modular architecture, and custom integrations (such as the Flask backend, database management, and UI interactions) were spearheaded by the primary developer, drawing on extensive expertise in web development and AI systems. To optimize certain aspects like prompt engineering for universality and code refinement for efficiency, AI assistants including Grok and Claude were consulted for iterative suggestions, ensuring creative enhancements while maintaining the developer's core vision and control over the project's direction. This collaboration leveraged AI's strengths in rapid prototyping and pattern recognition to accelerate development without compromising originality.
+
